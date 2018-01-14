@@ -3,9 +3,9 @@
 // load pipeline functions
 // Requires pipeline-github-lib plugin to load library from github
 
-@Library('github.com/lachie83/jenkins-pipeline@dev')
+@Library('github.com/udbscience/jenkins-pipeline-lib')
 
-def pipeline = new io.estrado.Pipeline()
+def pipeline = new io.udbscience.Pipeline()
 
 podTemplate(label: 'jenkins-pipeline', containers: [
     containerTemplate(name: 'docker', image: 'docker:1.12.6', command: 'cat', ttyEnabled: true),
@@ -114,12 +114,12 @@ volumes:[
         )
 
         // anchore image scanning configuration
-        println "Add container image tags to anchore scanning list"
-
-        def tag = image_tags_list.get(0)
-        def imageLine = "${config.container_repo.host}/${acct}/${config.container_repo.repo}:${tag}" + ' ' + env.WORKSPACE + '/Dockerfile'
-        writeFile file: 'anchore_images', text: imageLine
-        anchore name: 'anchore_images', inputQueries: [[query: 'list-packages all'], [query: 'list-files all'], [query: 'cve-scan all'], [query: 'show-pkg-diffs base']]
+        // println "Add container image tags to anchore scanning list"
+        //
+        // def tag = image_tags_list.get(0)
+        // def imageLine = "${config.container_repo.host}/${acct}/${config.container_repo.repo}:${tag}" + ' ' + env.WORKSPACE + '/Dockerfile'
+        // writeFile file: 'anchore_images', text: imageLine
+        // anchore name: 'anchore_images', inputQueries: [[query: 'list-packages all'], [query: 'list-files all'], [query: 'cve-scan all'], [query: 'show-pkg-diffs base']]
 
       }
 
