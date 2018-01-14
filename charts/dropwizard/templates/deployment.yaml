@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "dropwizard.fullname" . }}
+  labels:
+    app: {{ template "dropwizard.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "dropwizard.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          {{- range $key, $value := .Values.service.appPort }}
+            {{- if $value }}
+            - containerPort: {{ $value }}
+              name: app-{{ $key }}
+            {{- end }}
+          {{- end }}
+          {{- range $key, $value := .Values.service.adminPort }}
+            {{- if $value }}
+            - containerPort: {{ $value }}
+              name: admin-{{ $key }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.service.healthcheck }}
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.service.adminPort.http }}
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: {{ .Values.service.adminPort.http }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}

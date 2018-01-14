@@ -67,30 +67,31 @@ volumes:[
       }
     }
 
-    // stage ('test deployment') {
-    //
-    //   container('helm') {
-    //
-    //     // run helm chart linter
-    //     pipeline.helmLint(chart_dir)
-    //
-    //     // run dry-run helm chart installation
-    //     pipeline.helmDeploy(
-    //       dry_run       : true,
-    //       name          : config.app.name,
-    //       namespace     : config.app.name,
-    //       chart_dir     : chart_dir,
-    //       set           : [
-    //         "imageTag": image_tags_list.get(0),
-    //         "replicas": config.app.replicas,
-    //         "cpu": config.app.cpu,
-    //         "memory": config.app.memory,
-    //         "ingress.hostname": config.app.hostname,
-    //       ]
-    //     )
-    //
-    //   }
-    // }
+    stage ('test deployment') {
+
+      container('helm') {
+
+        // run helm chart linter
+        pipeline.helmLint(chart_dir)
+
+        // run dry-run helm chart installation
+        pipeline.helmDeploy(
+          dry_run       : true,
+          name          : config.app.name,
+          namespace     : config.app.name,
+          chart_dir     : chart_dir,
+          set           : [
+            "image.repository": "${acct}/${config.container_repo.repo}",
+            "image.tag": image_tags_list.get(0),
+            "replicaCount": config.app.replicas,
+            "cpu": config.app.cpu,
+            "memory": config.app.memory,
+            "ingress.hostname": config.app.hostname,
+          ]
+        )
+
+      }
+    }
 
     stage ('publish container') {
 
