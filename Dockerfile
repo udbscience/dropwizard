@@ -16,5 +16,4 @@ WORKDIR /opt/app
 
 EXPOSE 8080 8081 8443 8444
 
-CMD [ "start_app.sh" ]
-
+CMD [ "./start_app.sh" ]

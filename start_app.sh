@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 APP_JAR=${APP_JAR:-target/app.jar}
 APP_PARAMS=${APP_PARAMS:-"server example.yml"}
