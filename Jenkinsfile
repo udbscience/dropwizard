@@ -62,36 +62,35 @@ volumes:[
 
     stage ('compile and test') {
 
-      container('golang') {
-        sh "go test -v -race ./..."
-        sh "make bootstrap build"
+      container('maven') {
+        sh "mvn -D skipTests clean package"
       }
     }
 
-    stage ('test deployment') {
-
-      container('helm') {
-
-        // run helm chart linter
-        pipeline.helmLint(chart_dir)
-
-        // run dry-run helm chart installation
-        pipeline.helmDeploy(
-          dry_run       : true,
-          name          : config.app.name,
-          namespace     : config.app.name,
-          chart_dir     : chart_dir,
-          set           : [
-            "imageTag": image_tags_list.get(0),
-            "replicas": config.app.replicas,
-            "cpu": config.app.cpu,
-            "memory": config.app.memory,
-            "ingress.hostname": config.app.hostname,
-          ]
-        )
-
-      }
-    }
+    // stage ('test deployment') {
+    //
+    //   container('helm') {
+    //
+    //     // run helm chart linter
+    //     pipeline.helmLint(chart_dir)
+    //
+    //     // run dry-run helm chart installation
+    //     pipeline.helmDeploy(
+    //       dry_run       : true,
+    //       name          : config.app.name,
+    //       namespace     : config.app.name,
+    //       chart_dir     : chart_dir,
+    //       set           : [
+    //         "imageTag": image_tags_list.get(0),
+    //         "replicas": config.app.replicas,
+    //         "cpu": config.app.cpu,
+    //         "memory": config.app.memory,
+    //         "ingress.hostname": config.app.hostname,
+    //       ]
+    //     )
+    //
+    //   }
+    // }
 
     stage ('publish container') {
 
@@ -116,7 +115,7 @@ volumes:[
 
         // anchore image scanning configuration
         println "Add container image tags to anchore scanning list"
-        
+
         def tag = image_tags_list.get(0)
         def imageLine = "${config.container_repo.host}/${acct}/${config.container_repo.repo}:${tag}" + ' ' + env.WORKSPACE + '/Dockerfile'
         writeFile file: 'anchore_images', text: imageLine
@@ -126,66 +125,67 @@ volumes:[
 
     }
 
-    if (env.BRANCH_NAME =~ "PR-*" ) {
-      stage ('deploy to k8s') {
-        container('helm') {
-          // Deploy using Helm chart
-          pipeline.helmDeploy(
-            dry_run       : false,
-            name          : env.BRANCH_NAME.toLowerCase(),
-            namespace     : env.BRANCH_NAME.toLowerCase(),
-            chart_dir     : chart_dir,
-            set           : [
-              "imageTag": image_tags_list.get(0),
-              "replicas": config.app.replicas,
-              "cpu": config.app.cpu,
-              "memory": config.app.memory,
-              "ingress.hostname": config.app.hostname,
-            ]
-          )
+    // if (env.BRANCH_NAME =~ "PR-*" ) {
+    //   stage ('deploy to k8s') {
+    //     container('helm') {
+    //       // Deploy using Helm chart
+    //       pipeline.helmDeploy(
+    //         dry_run       : false,
+    //         name          : env.BRANCH_NAME.toLowerCase(),
+    //         namespace     : env.BRANCH_NAME.toLowerCase(),
+    //         chart_dir     : chart_dir,
+    //         set           : [
+    //           "imageTag": image_tags_list.get(0),
+    //           "replicas": config.app.replicas,
+    //           "cpu": config.app.cpu,
+    //           "memory": config.app.memory,
+    //           "ingress.hostname": config.app.hostname,
+    //         ]
+    //       )
+    //
+    //       //  Run helm tests
+    //       if (config.app.test) {
+    //         pipeline.helmTest(
+    //           name        : env.BRANCH_NAME.toLowerCase()
+    //         )
+    //       }
+    //
+    //       // delete test deployment
+    //       pipeline.helmDelete(
+    //           name       : env.BRANCH_NAME.toLowerCase()
+    //       )
+    //     }
+    //   }
+    // }
 
-          //  Run helm tests
-          if (config.app.test) {
-            pipeline.helmTest(
-              name        : env.BRANCH_NAME.toLowerCase()
-            )
-          }
+    // // deploy only the master branch
+    // if (env.BRANCH_NAME == 'master') {
+    //   stage ('deploy to k8s') {
+    //     container('helm') {
+    //       // Deploy using Helm chart
+    //       pipeline.helmDeploy(
+    //         dry_run       : false,
+    //         name          : config.app.name,
+    //         namespace     : config.app.name,
+    //         chart_dir     : chart_dir,
+    //         set           : [
+    //           "imageTag": image_tags_list.get(0),
+    //           "replicas": config.app.replicas,
+    //           "cpu": config.app.cpu,
+    //           "memory": config.app.memory,
+    //           "ingress.hostname": config.app.hostname,
+    //         ]
+    //       )
+    //
+    //       //  Run helm tests
+    //       if (config.app.test) {
+    //         pipeline.helmTest(
+    //           name          : config.app.name
+    //         )
+    //       }
+    //     }
+    //   }
+    // }
 
-          // delete test deployment
-          pipeline.helmDelete(
-              name       : env.BRANCH_NAME.toLowerCase()
-          )
-        }
-      }
-    }
-
-    // deploy only the master branch
-    if (env.BRANCH_NAME == 'master') {
-      stage ('deploy to k8s') {
-        container('helm') {
-          // Deploy using Helm chart
-          pipeline.helmDeploy(
-            dry_run       : false,
-            name          : config.app.name,
-            namespace     : config.app.name,
-            chart_dir     : chart_dir,
-            set           : [
-              "imageTag": image_tags_list.get(0),
-              "replicas": config.app.replicas,
-              "cpu": config.app.cpu,
-              "memory": config.app.memory,
-              "ingress.hostname": config.app.hostname,
-            ]
-          )
-          
-          //  Run helm tests
-          if (config.app.test) {
-            pipeline.helmTest(
-              name          : config.app.name
-            )
-          }
-        }
-      }
-    }
   }
 }
