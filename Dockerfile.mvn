@@ -4,4 +4,5 @@ COPY . /opt/app
 WORKDIR /opt/app
 
 RUN mvn -DskipTests package
-CMD [ "bash" ]
+EXPOSE 8080 8081 8443 8444
+CMD [ "./start_app.sh" ]
