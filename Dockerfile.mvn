@@ -1,4 +1,7 @@
 FROM maven:alpine
-#COPY . /opt/app
+
+COPY . /opt/app
 WORKDIR /opt/app
 
+RUN mvn -DskipTests package
+CMD [ "bash" ]
