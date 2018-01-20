@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "dropwizard.fullname" . }}
+  labels:
+    app: {{ template "dropwizard.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.appPort.http }}
+      targetPort: {{ .Values.service.appPort.http }}
+      protocol: TCP
+      name: app-{{ .Values.service.name }}
+    - port: {{ .Values.service.adminPort.http }}
+      targetPort: {{ .Values.service.adminPort.http }}
+      protocol: TCP
+      name: admin-{{ .Values.service.name }}
+    - port: {{ .Values.service.appPort.https }}
+      targetPort: {{ .Values.service.appPort.https }}
+      protocol: TCP
+      name: app-ssl-{{ .Values.service.name }}
+    - port: {{ .Values.service.adminPort.https }}
+      targetPort: {{ .Values.service.adminPort.https }}
+      protocol: TCP
+      name: admin-ssl-{{ .Values.service.name }}
+  selector:
+    app: {{ template "dropwizard.name" . }}
+    release: {{ .Release.Name }}
