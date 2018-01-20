@@ -1,0 +1,15 @@
+#####
+# TODO:
+#####
+- refactor Dockerfile
+- run as unpriv user in container
+- dropwizard template refactor
+- chart from repo if local does not exist
+- config maps
+- secrets
+- makefile
+- sonar
+- jacoco
+- unit tests
+- maven incremental build
+- settings.xml

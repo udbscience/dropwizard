@@ -1,11 +1,18 @@
 {
   "app": {
     "name": "dropwizard",
+    "namespace": "default",
     "replicas": "1",
     "cpu": "10m",
     "memory": "128Mi",
     "test": true,
     "hostname": "w1.tectonicsandbox.com"
+  },
+  "sonar": {
+    "url": "",
+  },
+  "maven": {
+    "MVN_ARGS": "",
   },
   "container_repo": {
     "host": "registry.hub.docker.com",
