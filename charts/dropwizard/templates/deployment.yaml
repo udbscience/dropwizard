@@ -15,10 +15,31 @@ spec:
         app: {{ template "dropwizard.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.config.mountfiles }}
+      volumes:
+        {{- range .Values.config.mountfiles }}
+        - name: {{ .name }}-vol
+          configMap:
+            defaultMode: 0674
+            name: {{ .name }}
+        {{- end }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{- if .Values.config.envfile }}
+          envFrom:
+          - configMapRef:
+              name: {{ .Values.config.envfile }}
+          {{- end }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.config.mountfiles }}
+          volumeMounts:
+          {{- range .Values.config.mountfiles }}
+            - name: {{ .name }}-vol
+              mountPath: {{ .path | quote }}
+          {{- end }}
+          {{- end }}
           ports:
           {{- range $key, $value := .Values.service.appPort }}
             {{- if $value }}
